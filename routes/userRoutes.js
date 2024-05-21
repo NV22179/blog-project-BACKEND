@@ -1,13 +1,16 @@
-import express from "express"
+import express from "express";
 const router = express.Router();
-import { registerUser, loginUser, userProfile, updateProfile, updateProfilePicture } from "../controllers/userControllers"
-import { authGuard } from "../middleware/authMiddleware";
+import {
+  createPost,
+  deletePost,
+  updatePost,
+} from "../controllers/postControllers";
+import { authGuard, adminGuard } from "../middleware/authMiddleware";
 
-
-router.post('/register', registerUser);
-router.post('/login', loginUser);
-router.get('/profile', authGuard , userProfile);
-router.put('/updateProfile', authGuard, updateProfile)
-router.put('/updateProfilePicture', authGuard, updateProfilePicture)
+router.post("/", authGuard, adminGuard, createPost);
+router
+  .route("/:slug")
+  .put(authGuard, adminGuard, updatePost)
+  .delete(authGuard, adminGuard, deletePost);
 
 export default router;

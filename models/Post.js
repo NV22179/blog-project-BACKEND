@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-
 const PostSchema = new Schema(
   {
     title: { type: String, required: true },
@@ -12,6 +11,7 @@ const PostSchema = new Schema(
     categories: [{ type: Schema.Types.ObjectId, ref: "PostCategories" }],
   },
   { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
 
 PostSchema.virtual("comments", {
@@ -19,6 +19,5 @@ PostSchema.virtual("comments", {
   localField: "_id",
   foreignField: "post",
 });
-
 const Post = model("Post", PostSchema);
 export default Post;

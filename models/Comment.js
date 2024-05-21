@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-
 const CommentSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -18,6 +17,7 @@ const CommentSchema = new Schema(
     },
   },
   { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
 
 CommentSchema.virtual("replies", {
@@ -25,6 +25,5 @@ CommentSchema.virtual("replies", {
   localField: "_id",
   foreignField: "parent",
 });
-
 const Comment = model("Comment", CommentSchema);
 export default Comment;

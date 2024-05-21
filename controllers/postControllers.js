@@ -3,7 +3,6 @@ import Post from "../models/Post";
 import Comment from "../models/Comment";
 import { fileRemover } from "../utils/fileRemover";
 import { v4 as uuidv4 } from "uuid";
-
 const createPost = async (req, res, next) => {
   try {
     const post = new Post({
@@ -17,26 +16,21 @@ const createPost = async (req, res, next) => {
       photo: "",
       user: req.user._id,
     });
-
     const createdPost = await post.save();
     return res.json(createdPost);
   } catch (error) {
     next(error);
   }
 };
-
 const updatePost = async (req, res, next) => {
   try {
     const post = await Post.findOne({ slug: req.params.slug });
-
     if (!post) {
       const error = new Error("Post aws not found");
       next(error);
       return;
     }
-
     const upload = uploadPicture.single("postPicture");
-
     const handleUpdatePostData = async (data) => {
       const { title, caption, slug, body, tags, categories } = JSON.parse(data);
       post.title = title || post.title;
@@ -48,7 +42,6 @@ const updatePost = async (req, res, next) => {
       const updatedPost = await post.save();
       return res.json(updatedPost);
     };
-
     upload(req, res, async function (err) {
       if (err) {
         const error = new Error(
@@ -78,18 +71,14 @@ const updatePost = async (req, res, next) => {
     next(error);
   }
 };
-
 const deletePost = async (req, res, next) => {
   try {
     const post = await Post.findOneAndDelete({ slug: req.params.slug });
-
     if (!post) {
       const error = new Error("Post aws not found");
       return next(error);
     }
-
     await Comment.deleteMany({ post: post._id });
-
     return res.json({
       message: "Post is successfully deleted",
     });
@@ -99,3 +88,43 @@ const deletePost = async (req, res, next) => {
 };
 
 export { createPost, updatePost, deletePost };
+const getPost = async (req, res, next) => {
+  try {
+    const post = await Post.findOne({ slug: req.params.slug }).populate([
+      {
+        path: "user",
+        select: ["avatar", "name"],
+      },
+      {
+        path: "comments",
+        match: {
+          check: true,
+          parent: null,
+        },
+        populate: [
+          {
+            path: "user",
+            select: ["avatar", "name"],
+          },
+          {
+            path: "replies",
+            match: {
+              check: true,
+            },
+          },
+        ],
+      },
+    ]);
+
+    if (!post) {
+      const error = new Error("Post was not found");
+      return next(error);
+    }
+
+    return res.json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { createPost, updatePost, deletePost, getPost };
